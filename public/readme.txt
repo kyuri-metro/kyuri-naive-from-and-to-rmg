@@ -1,0 +1,1 @@
+This rmg-default-template.json is extracted from RMG Shanghai Line 7 template, which is authored by @Thomastzc, @thekingofcity, and @816R.
