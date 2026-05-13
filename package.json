@@ -14,7 +14,9 @@
     "build:lib": "tsc",
     "build:site": "vite build",
     "dev": "vite",
-    "kyuri-rmg": "node dist/cli.js"
+    "kyuri-rmg": "node dist/cli.js",
+    "deploy": "npm run build:site && wrangler deploy",
+    "preview": "npm run build:site && wrangler dev"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -22,11 +24,13 @@
     "yaml": "^2.8.0"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.36.4",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "^5.7.2",
-    "vite": "^7.0.0"
+    "vite": "^7.0.0",
+    "wrangler": "^4.90.1"
   }
 }
