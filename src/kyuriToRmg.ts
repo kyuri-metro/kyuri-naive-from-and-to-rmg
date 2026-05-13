@@ -23,6 +23,15 @@ function sanitizeRmgKey(raw: string, used: Set<string>): string {
   return candidate;
 }
 
+/** RMG line_name [zh, en]：线路 id 为「单字母 + 1～2 位数字」或「仅 1～2 位数字」时中文 `{id}号线`、英文 `Line {id}`；否则中文为 id、英文空串。 */
+function lineNamePair(lineId: string): [string, string] {
+  const id = lineId.trim();
+  if (/^([a-zA-Z]\d{1,2}|\d{1,2})$/.test(id)) {
+    return [`${id}号线`, `Line ${id}`];
+  }
+  return [id, ''];
+}
+
 function kyuriTransferToRmg(
   transfers: KyuriStation['transfer'],
   tick: 'l' | 'r',
@@ -32,7 +41,7 @@ function kyuriTransferToRmg(
   }
   const lines = transfers.map((t) => ({
     theme: ['other', t.lineId.slice(0, 32), t.color, t.textColor],
-    name: [t.lineId, t.lineId],
+    name: lineNamePair(t.lineId),
   }));
   return { tick_direc: tick, paid_area: true, groups: [{ lines }] };
 }
@@ -48,15 +57,6 @@ function pickPrototypeStation(stnList: Record<string, unknown>): JsonObject {
     }
   }
   throw new Error('模板 stn_list 中找不到可用站点原型（除 linestart/lineend 外）。');
-}
-
-/** RMG line_name [zh, en]：线路 id 为「单字母 + 1～2 位数字」或「仅 1～2 位数字」时中文 `{id}号线`、英文 `Line {id}`；否则中文为 id、英文空串。 */
-function lineNamePair(lineId: string): [string, string] {
-  const id = lineId.trim();
-  if (/^([a-zA-Z]\d{1,2}|\d{1,2})$/.test(id)) {
-    return [`${id}号线`, `Line ${id}`];
-  }
-  return [id, ''];
 }
 
 /**
