@@ -50,11 +50,13 @@ function pickPrototypeStation(stnList: Record<string, unknown>): JsonObject {
   throw new Error('模板 stn_list 中找不到可用站点原型（除 linestart/lineend 外）。');
 }
 
+/** RMG line_name [zh, en]：线路 id 为「单字母 + 1～2 位数字」时中文 `{id}号线`、英文 `Line {id}`（保留如 N10、A01）；否则中文为 id、英文空串。 */
 function lineNamePair(lineId: string): [string, string] {
-  if (/^\d+$/.test(lineId.trim())) {
-    return [`${lineId}号线`, `Line ${lineId}`];
+  const id = lineId.trim();
+  if (/^[a-zA-Z]\d{1,2}$/.test(id)) {
+    return [`${id}号线`, `Line ${id}`];
   }
-  return [lineId, lineId];
+  return [id, ''];
 }
 
 /**
