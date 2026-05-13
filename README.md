@@ -1,7 +1,5 @@
 # kyuri-naive-from-and-to-rmg
 
-> 以下内容为 Cursor Composer 2 生成，但经过人工正确性检查，可以作为参考
-
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Vite](https://img.shields.io/badge/build-Vite-646cff)](https://vitejs.dev/)
 
@@ -18,21 +16,19 @@
 
 ## 第三方 / RMG
 
-本仓库**包含取自** [RMG（railmapgen/rmg）](https://github.com/railmapgen/rmg) 的源代码片段，来读取 RMG 站点 JSON 包含的主线拓扑与字段语义。RMG 以 **GNU GPL v3** 发布；本仓库整体亦以 **GPL-3.0** 分发，许可证全文见 **[LICENSE](./LICENSE)**。
+本仓库**包含取自** [RMG（railmapgen/rmg）](https://github.com/railmapgen/rmg) 的源代码片段，并依赖与 RMG 站点 JSON 相同的拓扑与字段语义。RMG 以 **GNU GPL v3** 发布；本仓库整体亦以 **GPL-3.0** 分发，许可证全文见 **[LICENSE](./LICENSE)**。
 
 **自 RMG 复制的本仓库路径（以源文件头部注释为准）**
 
 | 本仓库路径 | 对应 RMG 上游路径（参考） |
 |------------|---------------------------|
-| [`src/getBranches.ts`](./src/getBranches.ts) | [`src/redux/helper/graph-theory-util.ts`](https://github.com/railmapgen/rmg/blob/main/src/redux/helper/graph-theory-util.ts) 中的 `getBranches` |
+| [`src/getBranches.ts`](./src/getBranches.ts) | [`src/redux/helper/graph-theory-util.ts`](https://github.com/railmapgen/rmg/blob/main/src/redux/helper/graph-theory-util.ts) 中的 `getBranches`（文件头注释含来源与本地 `git blame` 考证摘要） |
 
-其余文件（如 `rmgToKyuri.ts`、`kyuriToRmg.ts` 等）为本仓库在 GPL 约束下**另行编写**的转换与封装逻辑，并非从 RMG 逐文件复制；`public/rmg-default-template.json` 为用于套模板的 **RMG 参数 JSON 示例**，供「Kyuri → RMG」流程使用。
-
-在 **Kyuri naive**（YAML）与 **RMG**（JSON 参数）之间转换的 CLI 与静态 Web 工具。
+其余文件（如 `rmgToKyuri.ts`、`kyuriToRmg.ts` 等）为本仓库在 GPL 约束下**自行编写**的转换与封装逻辑，并非从 RMG 逐文件复制；`public/rmg-default-template.json` 为用于套模板的 **RMG 参数 JSON 示例**，供「Kyuri → RMG」流程使用。
 
 ## 许可
 
-本项目以 **GNU GPL v3** 发布（因使用 [RMG](https://github.com/railmapgen/rmg) 的 GPL-3.0 逻辑）。根据 **GNU GPL v3** 许可证的规定，通过 `postMessage` 与父页面通信时，父页面应不会被要求采用 GPL。
+本项目以 **GNU GPL v3** 发布（因使用 [RMG](https://github.com/railmapgen/rmg) 的 GPL-3.0 逻辑）。通过 `postMessage` 与父页面通信时，**父页面不必采用 GPL**。
 
 ## Web（Vite）
 
@@ -56,6 +52,18 @@ npm run dev
 - 父页面 → 子 iframe：`source: "njmetro-railmap-parent"`，消息类型与字段见 `src/web/protocol.ts`（如 `setKyuriYaml`、`setRmgJson`、`convert`）。
 - 子 iframe → 父页面：`source: "kyuri-rmg-tool"`，`type: "ready"` 表示可下发数据；`type: "result"` 表示一次转换结束（成功带 `yaml` 或 `json`，失败带 `message`）。
 
+### Cloudflare Pages 与 iframe 父页白名单
+
+静态站点部署在 **Cloudflare Pages** 时，仓库根下 [`public/_headers`](./public/_headers) 会随 `npm run build` 进入 `dist-web/_headers`，为全部路径设置 `Content-Security-Policy: frame-ancestors …`，当前允许：
+
+- `https://njmetro-railmap-creator.umamichi.moe`（线上 [njmetro 贴纸生成器](https://njmetro-railmap-creator.umamichi.moe/)）
+- `http://localhost:5173`、`http://127.0.0.1:5173`（本地 Vite 开发常见来源）
+- `'self'`（本站同源）
+
+在响应中同时存在 **`frame-ancestors` 与 `X-Frame-Options` 时，现代浏览器会以 `frame-ancestors` 为准并忽略后者**（见 [MDN：X-Frame-Options 与 CSP 的关系](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Reference/Headers/X-Frame-Options)），从而减轻 Zone 级「安全标头」里 `SAMEORIGIN` 对跨域 iframe 的影响。若仍异常，请在 Cloudflare 规则中确认 **`dist-web` 部署的响应里确实带有**上述 CSP（未被其它规则覆盖或冲突）。
+
+若将来还有其它父站域名，在 `public/_headers` 的同一 `frame-ancestors` 指令中追加空格分隔的来源即可（须为合法 origin，含 scheme 与主机）。
+
 构建：
 
 ```bash
@@ -75,4 +83,4 @@ node dist/cli.js --help
 
 ## 默认 RMG 模板
 
-内置 `public/rmg-default-template.json`，用于「Kyuri → RMG」的非 **Kyuri naive** 字段，根据本文写成时 RMG 上的显示，其原作者为 @Thomastzc、@thekingofcity、和 @816R。
+内置 `public/rmg-default-template.json`，用于「Kyuri → RMG」；也可在网页中上传自定义模板 JSON。
